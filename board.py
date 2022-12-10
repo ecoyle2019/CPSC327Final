@@ -28,7 +28,7 @@ class BoardBuilder:
     def __init__(self):
         self.tiles_built = 0
         self.rows_built = 0
-        self.worker_places = {'A': 17, 'B': 9, 'Y': 7, 'Z': 19} # starting places for workers--NOTE: this dict should be updated each time a worker moves
+        self.worker_places = {'A': 16, 'B': 8, 'Y': 6, 'Z': 18} # starting places for workers--NOTE: this dict should be updated each time a worker moves
         self.build_board()
 
     # if tiles_built % 5 == 0 : start new row
