@@ -4,7 +4,6 @@ class Heuristic():
 
     def __init__(self):
         # add from Player.py
-        # self.possible_moves = self.get_possible_moves()
         pass
 
     def get_possible_move_scores(self):
