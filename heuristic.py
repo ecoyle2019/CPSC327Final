@@ -1,3 +1,4 @@
+import itertools
 
 # Heuristic will inherit from Player class
 class Heuristic():
@@ -5,6 +6,21 @@ class Heuristic():
     def __init__(self):
         # add from Player.py
         pass
+
+    def get_possible_moves(worker): # will also have self as param
+
+        poss_rows = [worker.row - 1, worker.row, worker.row + 1]
+        poss_cols = [worker.col - 1, worker.col, worker.col + 1]
+
+
+        poss_moves = list(itertools.product(poss_rows, poss_cols))
+
+        for m in poss_moves:
+            if m[0] > 5 or m[1] > 5:
+                poss_moves.remove(m)
+
+        return poss_moves
+    
 
     def get_possible_move_scores(self):
         '''Given a possible move, return the sub-scores for that move'''
