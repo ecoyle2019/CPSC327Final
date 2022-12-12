@@ -1,4 +1,4 @@
-from tile import Tile
+from tile import Tile, HeightError
 
 class Board:
     
@@ -6,19 +6,18 @@ class Board:
     # COLUMNS = 5
 
     def __init__(self):
-        self.board = BoardBuilder()
+        # self.board = self.make_board()
+        self.board = BoardBuilder().board
 
 
-    
+    # def make_board(self):
+    #     '''Calls board builder to construct the product (the board made up of tiles)'''
+    #     bb = BoardBuilder()   
+    #     return bb
 
+    def update_board(self):
+        pass
 
-
-# attributes:
-    # 25 tiles
-    # 4 workers
-
-# methods:
-    # isWon() - returns true if game is over (if a worker moves on top of space w level 3)
 
 # Board should use Memento pattern
 
@@ -28,19 +27,19 @@ class BoardBuilder:
     def __init__(self):
         self.tiles_built = 0
         self.rows_built = 0
-        self.worker_places = {'A': 16, 'B': 8, 'Y': 6, 'Z': 18} # starting places for workers--NOTE: this dict should be updated each time a worker moves
-        self.build_board()
+        # self.worker_places = {'A': 16, 'B': 8, 'Y': 6, 'Z': 18} # starting places for workers--NOTE: this dict should be updated each time a worker moves
+        self.board = self.build_board()
 
     # if tiles_built % 5 == 0 : start new row
     # if tiles_built in list(worker_places.values()) : tile.worker = {worker whose key corresponds to the value}
 
-    def get_worker(self):
-        '''Returns which worker should be on a given tile'''
-        for w in list(self.worker_places.items()):
-            if self.tiles_built in w:
-                return w[0]
+    # def get_worker(self):
+    #     '''Returns which worker should be on a given tile'''
+    #     for w in list(self.worker_places.items()):
+    #         if self.tiles_built in w:
+    #             return w[0]
 
-        return None
+    #     return None
 
     def create_tile(self):
         if self.tiles_built % 5 == 0 and self.tiles_built != 0:
@@ -54,8 +53,8 @@ class BoardBuilder:
             t.column = 5 # mod method works for all columns except the 5th, which will return 0, so this fixes that issue
 
         
-        if self.tiles_built in list(self.worker_places.values()):
-            t.worker = self.get_worker() # updates worker positions on board, assuming self.worker_places is up to date
+        # if self.tiles_built in list(self.worker_places.values()):
+        #     t.worker = self.get_worker() # updates worker positions on board, assuming self.worker_places is up to date
 
         return t
 
@@ -65,31 +64,36 @@ class BoardBuilder:
         while self.tiles_built < 25:
             the_tile = self.create_tile()
 
-            try:
-                entry = the_tile.height + the_tile.worker
-            except TypeError:
-                entry = the_tile.height
+            # try:
+            #     entry = str(the_tile.height) + the_tile.worker
+            # except TypeError:
+            #     entry = str(the_tile.height) # if the_tile.worker is None, it will just add the height
 
-            the_board[self.rows_built].append(entry) # number of rows completed will always be one less than the current row number, so it works for indexing
+            # the_board[self.rows_built].append(entry) # number of rows completed will always be one less than the current row number, so it works for indexing
+            # the_board[self.rows_built].append(the_tile.height)
+            the_board[self.rows_built].append(the_tile)
 
             self.tiles_built += 1
 
-        print(the_board)
-        # return the_board
+        # print(the_board)
+        return the_board
 
+    # def format_board(self):
+    #     row_divider = "+--+--+--+--+--+"
+    #     board = self.build_board()
 
-    def format_board(self):
-        board_divider = "+--+--+--+--+--+"
-        board = self.build_board()
+    #     # for i in range(25):
+    #     #     if i+1 % 5 == 0: start new row
         
-        # for now, I just want to see what the 2D board array looks like, so I'm just printing before figuring out formatting (need to figure out how to add column dividers)
-        # print(self.board)
+    #     #print row_divider
+    #     # for i in board:
+    #         # for t in i:
+    #             # print divider and value
+    #         # print row divider
 
-        r1 = board[0]
         
-        return r1
         
-        # return(str(type(board)))
+    #     # return(str(type(board)))
    
 
     # def __str__(self):
@@ -104,4 +108,11 @@ class BoardBuilder:
 if __name__ == "__main__":
     b = Board()
 
-    print(b.board)
+    # b.board[0][2].unbuild()
+    # # print(b.board)
+    # for x in b.board:
+    #     for y in x:
+    #         print(y.height, end='')
+    #     print("")
+
+    
