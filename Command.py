@@ -13,19 +13,19 @@ class MoveCommand(Command):
     """Command to move a worker"""
     #so we need to decide if we're initializing with direction or position
     #def __init__(self, worker, direction):
-    def __init__(self, worker, direction):
+    def __init__(self, worker, row, col):
         self.worker = worker
-        self.direction = direction
-        #self.row = row
-        #self.col = col
-        self.prev_row = None
-        self.prev_col = None
+        #self.direction = direction
+        self.new_row = row
+        self.new_col = col
+        self.prev_row = self.worker.row
+        self.prev_col = self.worker.col
 
     def execute(self):
         
-        self.prev_row = self.worker.row
-        self.prev_col = self.worker.col
-        self.worker.move_direction(self.direction)
+        #self.prev_row = self.worker.row
+        #self.prev_col = self.worker.col
+        self.worker.move_to(self.new_row, self.new_col)
     
     def unexecute(self):
         self.worker.move_to(self.prev_row, self.prev_col)

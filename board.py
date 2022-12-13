@@ -46,7 +46,7 @@ class BoardBuilder:
             self.rows_built += 1
         
         t = Tile()
-        t.row = self.rows_built + 1
+        t.row = self.rows_built # + 1
         t.column = self.tiles_built % 5
 
         if t.column == 0:

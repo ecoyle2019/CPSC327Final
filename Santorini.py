@@ -1,4 +1,4 @@
-from Tile import Tile
+from tile import Tile
 from Worker import Worker
 from board import Board
 from Player import Player, HeuristicPlayer, RandomPlayer
@@ -55,7 +55,8 @@ class Santorini():
         whiteworkers[1] = Worker("B", 1, 3)
         
 
-        s#elf.workers = []
+        #self.workers = []
+        
         player_one.pieces = whiteworkers
         player_two.pieces = blueworkers 
 
@@ -71,26 +72,26 @@ class Santorini():
     
     def select_worker(self, worker): 
         self.current_player = self.players[self.turn %2]
-        names = [p.name for p in self.current_player.pieces]
 
-        if worker in names:
-            self.currently_selected_worker = self.current_player.pieces[0] #fix this
-        else: 
-            raise NotAValidWorkerError
+        for p in self.current_player.pieces:
+            if p.name == worker:
+                self.currently_selected_worker = p
+                return
+
+        raise NotAValidWorkerError        
 
     def move(self, direction):
-        if self.check_valid_move(direction):
-            move = MoveCommand(self.currently_selected_worker, direction)
-        
+
+        new_row_col = self.check_valid_move(direction)
+        move = MoveCommand(self.currently_selected_worker, new_row_col[0], new_row_col[1])
         move.execute()
 
         self.commandhistory.append(move)
 
     def build(self, direction):
-        row = 0
-        col = 0
-        if self.check_valid_move(direction):
-            build = BuildCommand(board[row][col])
+
+        new_row_col = self.check_valid_move(direction)
+        build = BuildCommand(self.board.board[new_row_col[0]][new_row_col[1]])
         
         build.execute()
         self.commandhistory.append(build)
@@ -125,7 +126,7 @@ class Santorini():
         if new_r > MAX_BOUND or new_c > MAX_BOUND or new_r < MIN_BOUND or new_c < MIN_BOUND:
             raise OutOfBoundsError
 
-        if board[new_r][new_c].height >= MAX_HEIGHT: #change to match board implementation
+        if self.board.board[new_r][new_c].height >= MAX_HEIGHT: #change to match board implementation
             raise AttemptedToMoveIntoBlockedTileError
         
         allworkers = self.players[0].pieces + self.players[1].pieces
@@ -133,6 +134,29 @@ class Santorini():
             if x.row == new_r and x.col == new_c:
                 raise AttemptedToMoveIntoOccupiedTileError
         
-        return True
+        return [new_r, new_c]
 
+    def print_board(self):
+        '''Used to format and print board to stdout.'''
+        row_divider = "+--+--+--+--+--+"
+        board = self.board.board
+        allworkers = self.players[0].pieces + self.players[1].pieces
+        # print(board)
+
+        print(row_divider)
+
+        for row in board:
+            for t in row:
+                print(f"|{t.height}", end='')
+                occupied = False
+                for w in allworkers:
+                    if w.row == t.row and w.col == t.column:
+                        print(f"{w.name}", end='')
+                        occupied = True
+                        break
+                if occupied == False:
+                    print(f" ", end='')
+                
+                # add check for worker—-if no worker on tile, add space
+            print(f"|\n{row_divider}")
         
