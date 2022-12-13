@@ -41,18 +41,6 @@ class HeuristicPlayer(Player):
     #     return poss_moves
     
     def get_move(self, possible_moves):
-        # return self.find_best_move(possible_moves)
-
-        # directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
-        # possible_moves = self.game.get_sub_scores() # get sub-scores for all possible moves
-        # move = self.game.players[self.game.turn % 2].find_best_move(possible_moves)
-        # worker_to_move = move[0]
-        # new_row = move[1][0]
-        # new_col = move[1][1]
-
-        # self.game.select_worker(worker_to_move.name)
-        # worker_to_move.move_to(new_row, new_col)
-        # build_dir = random.choice(directions)
         
         # worker = best_move[0]
         best_move = self.find_best_move(possible_moves)
