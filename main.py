@@ -19,13 +19,22 @@ class SantoriniCLI:
         # each should be in a separate try-except block
         try:
             self.white_player = sys.argv[1]
-            self.blue_player = sys.argv[2]
-            self.enable_un_re = sys.argv[3]
-            self.enable_score_display = sys.argv[4]
         except IndexError:
             self.white_player = white_player
+
+        try:
+            self.blue_player = sys.argv[2]
+        except IndexError:
             self.blue_player = blue_player
+            
+        try:
+            self.enable_un_re = sys.argv[3]
+        except IndexError:
             self.enable_un_re = enable_un_re
+
+        try:
+            self.enable_score_display = sys.argv[4] 
+        except IndexError:
             self.enable_score_display = enable_score_display
 
 
