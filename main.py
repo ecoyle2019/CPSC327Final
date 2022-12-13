@@ -41,23 +41,24 @@ class SantoriniCLI:
             self.turn_number += 1
             self.game.turn += 1
 
-    def print_board_2(self):
-        '''Used to format and print board to stdout.'''
-        row_divider = "+--+--+--+--+--+"
-        board = self.game.board.board
-        # print(board)
-
-        print(row_divider)
-
-        for row in board:
-            for t in row:
-                print(f"|{t.height} ", end='')
-                # add check for worker—-if no worker on tile, add space
-            print(f"|\n{row_divider}")
+        return
 
 
     # TODO: change so this function returns true when the game is won
     def is_won(self):
+
+        # checking if white won
+        for w in self.game.players[0].pieces:
+            if self.game.board.board[w.row][w.col].height == 3:
+                print("white has won")
+                return True
+
+        # checking if blue won
+        for b in self.game.players[1].pieces:
+            if self.game.board.board[b.row][b.col].height == 3:
+                print("blue has won")
+                return True
+
         return False
 
     def get_player(self):
@@ -104,7 +105,7 @@ class SantoriniCLI:
                 self.game.select_worker(the_worker)
                 break
             except NotAValidWorkerError:
-                print("Not a valid direction")
+                print("Not a valid worker")
 
         move_direction = None
         while True:
@@ -139,5 +140,4 @@ if __name__ == "__main__":
     game = SantoriniCLI()
     game.run_game()
     # game.print_board()
-    print(sys.argv[1])
     
