@@ -47,10 +47,10 @@ class BoardBuilder:
         
         t = Tile()
         t.row = self.rows_built + 1
-        t.column = self.tiles_built % 5
+        t.column = (self.tiles_built % 5) + 1
 
-        if t.column == 0:
-            t.column = 5 # mod method works for all columns except the 5th, which will return 0, so this fixes that issue
+        # if t.column == 0:
+        #     t.column = 5 # mod method works for all columns except the 5th, which will return 0, so this fixes that issue
 
         
         # if self.tiles_built in list(self.worker_places.values()):
@@ -64,55 +64,19 @@ class BoardBuilder:
         while self.tiles_built < 25:
             the_tile = self.create_tile()
 
-            # try:
-            #     entry = str(the_tile.height) + the_tile.worker
-            # except TypeError:
-            #     entry = str(the_tile.height) # if the_tile.worker is None, it will just add the height
-
-            # the_board[self.rows_built].append(entry) # number of rows completed will always be one less than the current row number, so it works for indexing
-            # the_board[self.rows_built].append(the_tile.height)
             the_board[self.rows_built].append(the_tile)
 
             self.tiles_built += 1
 
-        # print(the_board)
         return the_board
-
-    # def format_board(self):
-    #     row_divider = "+--+--+--+--+--+"
-    #     board = self.build_board()
-
-    #     # for i in range(25):
-    #     #     if i+1 % 5 == 0: start new row
-        
-    #     #print row_divider
-    #     # for i in board:
-    #         # for t in i:
-    #             # print divider and value
-    #         # print row divider
-
-        
-        
-    #     # return(str(type(board)))
-   
-
-    # def __str__(self):
-    #     # return self.format_board()
-    #     return self.build_board
 
 # ROW = SELF.ROWS_BUILT
 # COLUMN = SELF.TILES_BUILT % 5
 
-
+# [ [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0] ]
 
 if __name__ == "__main__":
     b = Board()
 
-    # b.board[0][2].unbuild()
-    # # print(b.board)
-    # for x in b.board:
-    #     for y in x:
-    #         print(y.height, end='')
-    #     print("")
 
     
