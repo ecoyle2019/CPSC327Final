@@ -19,18 +19,31 @@ class SantoriniCLI:
         # each should be in a separate try-except block
         try:
             self.white_player = sys.argv[1]
-            self.blue_player = sys.argv[2]
-            self.enable_un_re = sys.argv[3]
-            self.enable_score_display = sys.argv[4]
+  
         except IndexError:
             self.white_player = white_player
+    
+        try:
+            self.blue_player = sys.argv[2]
+        except IndexError:
             self.blue_player = blue_player
+
+        try:
+            if sys.argv[3] == 'on':
+                self.enable_un_re = True
+            else:
+                self.enable_un_re = False
+        except IndexError:
             self.enable_un_re = enable_un_re
+
+        try:
+            if sys.argv[4] == 'on':
+                self.enable_score_display = True
+            else:
+                self.enable_score_display = False
+        except IndexError:
             self.enable_score_display = enable_score_display
 
-
-        #self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
-        #self.turn_number = 1
         # self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
 
         # if self.white_player == 'random':
@@ -62,10 +75,6 @@ class SantoriniCLI:
         else:
             self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
 
-
-        #self.turn_number = 1
-
-
         
         #self.run_game()
 
@@ -77,7 +86,6 @@ class SantoriniCLI:
         
         while not self.is_won():
             self.display_prompt()
-            #self.turn_number += 1
             self.game.turn += 1
 
         return
@@ -133,8 +141,6 @@ class SantoriniCLI:
 
     def display_prompt(self):
 
-        
-
         if self.enable_un_re == 'on':
             while True:
                 self.game.print_board()
@@ -149,7 +155,7 @@ class SantoriniCLI:
                 while action not in ['undo', 'redo', 'next']:
                     action = input("undo, redo, next\n")
 
-                
+
                 if action == 'undo':
                     # do stuff
                     self.game.undo()
@@ -170,6 +176,20 @@ class SantoriniCLI:
                 print(f", {self.get_score_display()}")
             else:
                 print("")
+
+        # if self.enable_un_re == 'on':
+        #     action = input("undo, redo, next\n").lower()
+        #     while action not in ['undo', 'redo', 'next']:
+        #         action = input("undo, redo, next\n")
+
+            
+        #     if action == 'undo':
+        #         # do stuff
+        #         pass
+        #     elif action == 'redo':
+        #         # do stuff
+        #         pass
+        #     # if action == 'next': continue with the prompt
 
         if self.game.players[self.game.turn % 2].type == "Heuristic":
             # print(self.game.get_sub_scores())
@@ -196,9 +216,36 @@ class SantoriniCLI:
                 except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError):
                     build_dir = random.choice(directions)
 
-            print(f"{worker_to_move.name},{move_dir},{build_dir}") # add other stuff as well
+            print(f"{worker_to_move.name},{move_dir},{build_dir}")
             return
-            # implement move, build randomly, and print out what was done
+        
+        elif self.game.players[self.game.turn % 2].type == "Random":
+            directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
+            player_workers = self.game.players[self.game.turn % 2].pieces
+            worker_to_move = random.choice(player_workers)
+
+            self.game.select_worker(worker_to_move.name)
+
+            move_dir = random.choice(directions)
+            while True:
+                try:
+                    self.game.move(move_dir)
+                    break
+                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
+                    move_dir = random.choice(directions)
+
+            build_dir = random.choice(directions)
+            while True:
+                try:
+                    self.game.build(build_dir)
+                    break
+                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
+                    build_dir = random.choice(directions)
+
+            print(f"{worker_to_move.name},{move_dir},{build_dir}")
+            return
+
+            
 
         the_worker = None
         while True:
