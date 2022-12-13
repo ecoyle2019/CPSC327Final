@@ -1,9 +1,10 @@
-from tile import Tile
+from Tile import Tile
 from Worker import Worker
 from board import Board
 from Player import Player, HeuristicPlayer, RandomPlayer
 from Command import MoveCommand, BuildCommand
 
+import itertools
 
 NORTH = 'n'
 SOUTH = 's'
@@ -157,6 +158,107 @@ class Santorini():
                 if occupied == False:
                     print(f" ", end='')
                 
-                # add check for worker—-if no worker on tile, add space
             print(f"|\n{row_divider}")
         
+
+
+    # call on self.currently_selected_worker
+    def get_possible_moves(self, worker):
+        poss_rows = [worker.row - 1, worker.row, worker.row + 1]
+        poss_cols = [worker.col - 1, worker.col, worker.col + 1]
+
+
+        poss_moves = list(itertools.product(poss_rows, poss_cols))
+
+        for m in poss_moves:
+            if m[0] > 5 or m[1] > 5:
+                poss_moves.remove(m)
+
+        return poss_moves
+
+
+    def get_possible_move_scores(self, worker, row, col):
+        '''Given a possible move to tile (row, col), return the sub-scores for that move'''
+        # one idea for this is to keep track of the original row and column, and try moving to each possible position by calling worker.move_direction for all possible directions
+        # after the worker is temporarily moved, call methods to get the scores then after storing the results in an array, reset the worker position to the start, and return the array
+        # NOTE: it should also calculate the score for the current position: if the current position of a worker has a higher score than any possible moves, don't move that worker
+        orig_row = worker.row
+        orig_col = worker.col
+
+        current_player = self.current_player
+        # opponent_player = self.players[(self.turn % 2) + 1]
+        if current_player == self.players[0]:
+            opponent_player = self.players[1]
+        else:
+            opponent_player = self.players[0]
+
+        worker.move_to(row, col)
+
+        sub_scores = [self.get_height_score(worker), self.get_center_score(worker), self.get_distance_score(current_player, opponent_player)]
+        
+        worker.move_to(orig_row, orig_col)
+        
+        return sub_scores
+
+
+    def get_height_score(self, worker):
+        
+        row_idx = worker.row - 1
+        col_idx = worker.col - 1
+        return self.board.board[row_idx][col_idx].height
+
+    def get_center_score(self, worker):
+        
+        center_score = 0
+
+        # iterate through the worker's possible moves (do separately for each worker)
+        #NOTE: this implementation works if we (*temporarily*) move to each possible position to calculate score
+                        
+        # NOTE: row and column are indexed values (worker.row == 2 means third row of board)
+        if worker.row == 2 and worker.col == 2:
+            center_score += 2
+        if (worker.row in [1, 3]) and (worker.col in [1, 2, 3]):
+            center_score += 1
+        if worker.row == 2 and worker.col in [1, 3]:
+            center_score += 1
+        if worker.row in [0, 4] or worker.col in [0, 4]:
+            center_score += 0
+        
+        # print(worker.row, worker.col, center_score)
+        return center_score
+
+
+        
+    # def get_score(self):
+    #     '''Gets Heuristic score, which is used for Heuristic moves and score display'''
+
+    #     current_player = self.current_player
+    #     opponent_player = self.players[(self.turn % 2) + 1]
+
+
+    def get_distance_score(self, current_player, opponent_player):
+
+        # player_workers = [worker1, worker2]
+        # opponent_workers = [worker1, worker2]
+        player_workers = current_player.pieces
+        opponent_workers = opponent_player.pieces
+
+        worker1_d1 = max( abs(player_workers[0].row - opponent_workers[0].row), abs(player_workers[0].col - opponent_workers[0].col))
+        worker1_d2 = max( abs(player_workers[0].row - opponent_workers[1].row), abs(player_workers[0].col - opponent_workers[1].col))
+
+        worker2_d1 = max( abs(player_workers[1].row - opponent_workers[0].row), abs(player_workers[1].col - opponent_workers[0].col))
+        worker2_d2 = max( abs(player_workers[1].row - opponent_workers[1].row), abs(player_workers[1].col - opponent_workers[1].col))
+
+        d1 = min(worker1_d1, worker2_d1)
+        d2 = min(worker1_d2, worker2_d2)
+        distance_score = 8 - (d1 + d2)
+
+        return distance_score
+
+
+    def get_sub_scores(self):
+        '''Returns the sub-scores for each possible move'''
+        # go through each possible move and call self.get_possible_move_scores, and store in a dictionary -- return the dictionary (will be used in get_move_score())
+
+        pass
+
