@@ -1,8 +1,4 @@
 #Worker class
-import Move
-import Tile
-import Command
-from enum import Enum
 
 
 NORTH = 'n'
@@ -43,21 +39,21 @@ class Worker():
     def move_direction(self, dir):
         """Move to a """
         if(dir == NORTH):
-            self.move_to(self.row, self.col + 1)
-        elif(dir == SOUTH):
             self.move_to(self.row, self.col - 1)
+        elif(dir == SOUTH):
+            self.move_to(self.row, self.col + 1)
         elif(dir == EAST):
             self.move_to(self.row + 1, self.col)
         elif(dir == WEST):
             self.move_to(self.row - 1, self.col)
         elif(dir == NORTHEAST):
-            self.move_to(self.row + 1, self.col + 1)
-        elif(dir == NORTHWEST):
-            self.move_to(self.row - 1, self.col + 1)
-        elif(dir == SOUTHEAST):
             self.move_to(self.row + 1, self.col - 1)
-        elif(dir == SOUTHWEST):
+        elif(dir == NORTHWEST):
             self.move_to(self.row - 1, self.col - 1)
+        elif(dir == SOUTHEAST):
+            self.move_to(self.row + 1, self.col + 1)
+        elif(dir == SOUTHWEST):
+            self.move_to(self.row - 1, self.col + 1)
         else:
             raise NotValidDirectionError
 
