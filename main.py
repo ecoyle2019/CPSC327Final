@@ -1,8 +1,9 @@
 import sys
+import random
 
 from Santorini import Santorini, NotAValidWorkerError,  NotValidDirectionError, AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError
 from board import Board
-from Player import Player
+from Player import *
 # command line defaults (in order, from argv[1] to argv[4]): white_player=human, blue_player=human, enable_un_re=off, enable_score_display=off
 
 #NOTE: these are only here bc I can't call them from Santorini until everything is working
@@ -27,8 +28,43 @@ class SantoriniCLI:
             self.enable_un_re = enable_un_re
             self.enable_score_display = enable_score_display
 
-        self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
+
+        #self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
         #self.turn_number = 1
+        # self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
+
+        # if self.white_player == 'random':
+        #     self.game.player_one = RandomPlayer("white")
+        # elif self.white_player == 'heuristic':
+        #     self.game.player_one = HeuristicPlayer("white")
+        
+        # if self.blue_player == 'random':
+        #     self.game.player_two = RandomPlayer("blue")
+        # elif self.blue_player == 'heuristic':
+        #     self.game.player_two = HeuristicPlayer("blue")
+
+        if self.white_player == 'heuristic' and self.blue_player == 'human':
+            self.game = Santorini(HeuristicPlayer("white"), Player(self.blue_player, "blue"))
+        elif self.white_player == 'heuristic' and self.blue_player == 'random':
+            self.game = Santorini(HeuristicPlayer("white"), RandomPlayer("blue"))
+        elif self.white_player == 'heuristic' and self.blue_player == 'heuristic':
+            self.game = Santorini(HeuristicPlayer("white"), HeuristicPlayer("blue"))
+        elif self.white_player == 'random' and self.blue_player == 'random':
+            self.game = Santorini(Player(self.white_player, "white"), RandomPlayer("blue"))
+        elif self.white_player == 'random' and self.blue_player == 'human':
+            self.game = Santorini(RandomPlayer("white"), Player(self.blue_player, "blue"))
+        elif self.white_player == 'random' and self.blue_player == 'heuristic':
+            self.game = Santorini(RandomPlayer("white"), HeuristicPlayer("blue"))
+        elif self.white_player == 'human' and self.blue_player == 'random':
+            self.game = Santorini(Player(self.white_player, "white"), RandomPlayer("blue"))
+        elif self.white_player == 'human' and self.blue_player == 'heuristic':
+            self.game = Santorini(Player(self.white_player, "white"), HeuristicPlayer("blue"))
+        else:
+            self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
+
+
+        #self.turn_number = 1
+
 
         
         #self.run_game()
@@ -134,6 +170,35 @@ class SantoriniCLI:
                 print(f", {self.get_score_display()}")
             else:
                 print("")
+
+        if self.game.players[self.game.turn % 2].type == "Heuristic":
+            # print(self.game.get_sub_scores())
+            directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
+            possible_moves = self.game.get_sub_scores() # get sub-scores for all possible moves
+            current_player = self.game.turn % 2
+            move = self.game.players[current_player].find_best_move(possible_moves)
+            worker_to_move = move[0]
+            new_row = move[1][0]
+            new_col = move[1][1]
+
+            self.game.select_worker(worker_to_move.name)
+
+            move_dir = self.game.players[current_player].get_move(possible_moves)
+
+            # worker_to_move.move_to(new_row, new_col)
+            self.game.move(move_dir)
+            build_dir = random.choice(directions)
+
+            while True:
+                try:
+                    self.game.build(build_dir)
+                    break
+                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError):
+                    build_dir = random.choice(directions)
+
+            print(f"{worker_to_move.name},{move_dir},{build_dir}") # add other stuff as well
+            return
+            # implement move, build randomly, and print out what was done
 
         the_worker = None
         while True:
