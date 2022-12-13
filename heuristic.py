@@ -70,8 +70,9 @@ class Heuristic():
         # worker2_d1 = max( abs(player_workers[1].row - opponent_workers[0].row), abs(player_workers[1].col - opponent_workers[0].col))
         # worker2_d2 = max( abs(player_workers[1].row - opponent_workers[1].row), abs(player_workers[1].col - opponent_workers[1].col))
 
-        # distance = min(worker1_d1, worker1_d2) + min(worker2_d1, worker2_d2)
-        # distance_score = 8 - distance
+        # d1 = min(worker1_d1, worker2_d1)
+        # d2 = min(worker2_d1, worker2_d2)
+        # distance_score = 8 - (d1 + d2)
 
         # return distance_score
 
