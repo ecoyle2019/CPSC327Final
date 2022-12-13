@@ -150,6 +150,7 @@ class Santorini():
         board = self.board.board
         allworkers = self.players[0].pieces + self.players[1].pieces
         # print(board)
+        self.current_player = self.players[self.turn % 2]
 
         print(row_divider)
 
@@ -169,7 +170,6 @@ class Santorini():
         
 
 
-    # call on self.currently_selected_worker
     def get_possible_moves(self, worker):
         poss_rows = [worker.row - 1, worker.row, worker.row + 1]
         poss_cols = [worker.col - 1, worker.col, worker.col + 1]
@@ -178,7 +178,7 @@ class Santorini():
         poss_moves = list(itertools.product(poss_rows, poss_cols))
 
         for m in poss_moves:
-            if m[0] > 5 or m[1] > 5:
+            if m[0] > 4 or m[1] > 4:
                 poss_moves.remove(m)
 
         return poss_moves
@@ -193,7 +193,6 @@ class Santorini():
         orig_col = worker.col
 
         current_player = self.current_player
-        # opponent_player = self.players[(self.turn % 2) + 1]
         if current_player == self.players[0]:
             opponent_player = self.players[1]
         else:
@@ -267,7 +266,23 @@ class Santorini():
         '''Returns the sub-scores for each possible move'''
         # go through each possible move and call self.get_possible_move_scores, and store in a dictionary -- return the dictionary (will be used in get_move_score())
 
-        pass
+        worker1 = self.players[self.turn % 2].pieces[0]
+        worker2 = self.players[self.turn % 2].pieces[1]
+        # possible_moves = self.get_possible_moves()
+        worker1_moves = self.get_possible_moves(worker1)
+        worker2_moves = self.get_possible_moves(worker2)
+
+        w1_scores = {}
+        w2_scores = {}
+
+        for w1 in worker1_moves:
+            w1_scores[(w1[0], w1[1])] = self.get_possible_move_scores(worker1, w1[0], w1[1])
+
+        for w2 in worker2_moves:
+            w2_scores[(w2[0], w2[1])] = self.get_possible_move_scores(worker2, w2[0], w2[1])
+
+        return [w1_scores, w2_scores]
+
 
     def redo(self):
         try:
@@ -299,3 +314,6 @@ class Santorini():
     def next(self):
         self.commandfuture = []
     
+
+        
+
