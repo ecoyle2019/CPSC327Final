@@ -174,13 +174,8 @@ class SantoriniCLI:
 
 if __name__ == "__main__":
     # setup sql database (if we use) + anything else
-    argcount = len(sys.argv)
 
-    if argcount != 5:
-        print("Insufficient arguments\n")
-        exit(0)
-
-    game = SantoriniCLI(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    game = SantoriniCLI()
     game.run_game()
     # game.print_board()
 
