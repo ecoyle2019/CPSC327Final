@@ -28,6 +28,9 @@ class SantoriniCLI:
             self.enable_un_re = enable_un_re
             self.enable_score_display = enable_score_display
 
+
+        #self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
+        #self.turn_number = 1
         # self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
 
         # if self.white_player == 'random':
@@ -60,7 +63,8 @@ class SantoriniCLI:
             self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
 
 
-        self.turn_number = 1
+        #self.turn_number = 1
+
 
         
         #self.run_game()
@@ -73,7 +77,7 @@ class SantoriniCLI:
         
         while not self.is_won():
             self.display_prompt()
-            self.turn_number += 1
+            #self.turn_number += 1
             self.game.turn += 1
 
         return
@@ -97,7 +101,7 @@ class SantoriniCLI:
         return False
 
     def get_player(self):
-        if self.turn_number % 2 == 1:
+        if self.game.turn % 2 == 0:
             return "white (AB)"
         else:
             return "blue (YZ)"
@@ -129,28 +133,43 @@ class SantoriniCLI:
 
     def display_prompt(self):
 
-        self.game.print_board()
-
-        print(f"Turn: {self.turn_number}, {self.get_player()}", end='')
-
-        if self.enable_score_display == 'on':
-            print(f", {self.get_score_display()}")
-        else:
-            print("")
+        
 
         if self.enable_un_re == 'on':
-            action = input("undo, redo, next\n").lower()
-            while action not in ['undo', 'redo', 'next']:
-                action = input("undo, redo, next\n")
+            while True:
+                self.game.print_board()
 
-            
-            if action == 'undo':
-                # do stuff
-                pass
-            elif action == 'redo':
-                # do stuff
-                pass
-            # if action == 'next': continue with the prompt
+                print(f"Turn: {self.game.turn + 1}, {self.get_player()}", end='')
+
+                if self.enable_score_display == 'on':
+                    print(f", {self.get_score_display()}")
+                else:
+                    print("")
+                action = input("undo, redo, next\n").lower()
+                while action not in ['undo', 'redo', 'next']:
+                    action = input("undo, redo, next\n")
+
+                
+                if action == 'undo':
+                    # do stuff
+                    self.game.undo()
+                    pass
+                elif action == 'redo':
+                    # do stuff
+                    self.game.redo()
+                # if action == 'next': continue with the prompt
+                elif action == 'next':
+                    self.game.next()
+                    break
+        else:
+            self.game.print_board()
+
+            print(f"Turn: {self.game.turn + 1}, {self.get_player()}", end='')
+
+            if self.enable_score_display == 'on':
+                print(f", {self.get_score_display()}")
+            else:
+                print("")
 
         if self.game.players[self.game.turn % 2].type == "Heuristic":
             # print(self.game.get_sub_scores())
@@ -220,8 +239,13 @@ class SantoriniCLI:
 
 if __name__ == "__main__":
     # setup sql database (if we use) + anything else
+    argcount = len(sys.argv)
 
-    game = SantoriniCLI()
+    if argcount != 5:
+        print("Insufficient arguments\n")
+        exit(0)
+
+    game = SantoriniCLI(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
     game.run_game()
     # game.print_board()
 

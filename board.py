@@ -49,7 +49,7 @@ class BoardBuilder:
 
         t.row = self.rows_built # + 1
         t.column = self.tiles_built % 5
-\
+        return t
 
         # if t.column == 0:
         #     t.column = 5 # mod method works for all columns except the 5th, which will return 0, so this fixes that issue
@@ -58,7 +58,7 @@ class BoardBuilder:
         # if self.tiles_built in list(self.worker_places.values()):
         #     t.worker = self.get_worker() # updates worker positions on board, assuming self.worker_places is up to date
 
-        return t
+        
 
     def build_board(self):
         # IDEA: create an array for each row to get the entries for each row

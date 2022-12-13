@@ -1,4 +1,4 @@
-from Tile import Tile
+from tile import Tile
 from Worker import Worker
 from board import Board
 from Player import Player, HeuristicPlayer, RandomPlayer
@@ -67,6 +67,7 @@ class Santorini():
         self.current_player = None
 
         self.commandhistory = []
+        self.commandfuture = []
 
         self.turn = 0
 
@@ -83,7 +84,7 @@ class Santorini():
 
     def move(self, direction):
 
-        new_row_col = self.check_valid_move(direction)
+        new_row_col = self.check_valid_move(direction, move=True)
         move = MoveCommand(self.currently_selected_worker, new_row_col[0], new_row_col[1])
         move.execute()
 
@@ -97,7 +98,9 @@ class Santorini():
         build.execute()
         self.commandhistory.append(build)
 
-    def check_valid_move(self, dir):
+    def check_valid_move(self, dir, move=False):
+        old_r = self.currently_selected_worker.row
+        old_c = self.currently_selected_worker.col
         new_r = self.currently_selected_worker.row
         new_c = self.currently_selected_worker.col
 
@@ -134,6 +137,10 @@ class Santorini():
         for x in allworkers:
             if x.row == new_r and x.col == new_c:
                 raise AttemptedToMoveIntoOccupiedTileError
+        
+        if move:
+            if self.board.board[new_r][new_c].height > self.board.board[old_r][old_c].height + 1:
+                raise AttemptedToMoveIntoBlockedTileError
         
         return [new_r, new_c]
 
@@ -261,7 +268,6 @@ class Santorini():
 
         worker1 = self.players[self.turn % 2].pieces[0]
         worker2 = self.players[self.turn % 2].pieces[1]
-
         # possible_moves = self.get_possible_moves()
         worker1_moves = self.get_possible_moves(worker1)
         worker2_moves = self.get_possible_moves(worker2)
@@ -276,3 +282,38 @@ class Santorini():
             w2_scores[(w2[0], w2[1])] = self.get_possible_move_scores(worker2, w2[0], w2[1])
 
         return [w1_scores, w2_scores]
+
+
+    def redo(self):
+        try:
+            move_command = self.commandfuture.pop()
+            build_command = self.commandfuture.pop()
+            if(build_command != None and move_command != None):
+                move_command.execute()
+                build_command.execute()
+                self.turn+=1
+                self.commandhistory.append(move_command)
+                self.commandhistory.append(build_command)
+        except IndexError:
+            pass
+
+
+    def undo(self):
+        try:
+            build_command = self.commandhistory.pop()
+            move_command = self.commandhistory.pop()
+            if(build_command != None and move_command != None):
+                build_command.unexecute()
+                move_command.unexecute()
+                self.turn-=1
+                self.commandfuture.append(build_command)
+                self.commandfuture.append(move_command)
+        except IndexError: 
+            pass
+    
+    def next(self):
+        self.commandfuture = []
+    
+
+        
+
