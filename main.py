@@ -15,6 +15,7 @@ class SantoriniCLI:
 
     def __init__(self, white_player='human', blue_player='human', enable_un_re='off', enable_score_display='off'): # see how to reflect values found in command line args
 
+        # each should be in a separate try-except block
         try:
             self.white_player = sys.argv[1]
             self.blue_player = sys.argv[2]
@@ -28,6 +29,8 @@ class SantoriniCLI:
 
         self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
         self.turn_number = 1
+
+        
         #self.run_game()
 
         # NOTE: may need to assert command line args are valid (ex. white_player in ['human', 'heuristic', 'random'])
@@ -69,8 +72,28 @@ class SantoriniCLI:
 
     def get_score_display(self):
         # TODO: figure out how scoring works -- idrk
-        print(", FIGURE OUT SCORING")
-        pass
+        # print(", FIGURE OUT SCORING")
+        # score = self.game.score
+
+        current_player = self.game.players[self.game.turn % 2]
+        # opponent_player = self.game.players[(self.game.turn % 2) + 1]
+        if current_player == self.game.players[0]:
+            opponent_player = self.game.players[1]
+        else:
+            opponent_player = self.game.players[0]
+
+        current_pieces = current_player.pieces
+        height_score = 0
+        center_score = 0
+        distance_score = self.game.get_distance_score(current_player, opponent_player)
+
+        for p in current_pieces:
+            height_score += self.game.get_height_score(p)
+            center_score += self.game.get_center_score(p)
+
+        scores = [height_score, center_score, distance_score]
+
+        return f"({scores[0]}, {scores[1]}, {scores[2]})"
 
     def display_prompt(self):
 
@@ -79,7 +102,7 @@ class SantoriniCLI:
         print(f"Turn: {self.turn_number}, {self.get_player()}", end='')
 
         if self.enable_score_display == 'on':
-            self.get_score_display()
+            print(f", {self.get_score_display()}")
         else:
             print("")
 
@@ -140,4 +163,6 @@ if __name__ == "__main__":
     game = SantoriniCLI()
     game.run_game()
     # game.print_board()
+
+    
     
