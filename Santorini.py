@@ -1,4 +1,4 @@
-from tile import Tile
+from Tile import *
 from Worker import Worker
 from board import Board
 from Player import Player, HeuristicPlayer, RandomPlayer
@@ -132,17 +132,34 @@ class Santorini():
             print(f"Col: {new_c}\n")
             raise OutOfBoundsError
 
-        if self.board.board[new_r][new_c].height >= MAX_HEIGHT: #change to match board implementation
+        # if self.board.board[new_r][new_c].height >= MAX_HEIGHT: #change to match board implementation
+        #     raise AttemptedToMoveIntoBlockedTileError
+        # ADDED STATE
+        if self.board.board[new_r][new_c].state.name == 'Blocked':
             raise AttemptedToMoveIntoBlockedTileError
         
-        allworkers = self.players[0].pieces + self.players[1].pieces
-        for x in allworkers:
-            if x.row == new_r and x.col == new_c:
-                raise AttemptedToMoveIntoOccupiedTileError
+        # allworkers = self.players[0].pieces + self.players[1].pieces
+        # for x in allworkers:
+        #     if x.row == new_r and x.col == new_c:
+        #         raise AttemptedToMoveIntoOccupiedTileError
+        # ADDED STATE
+        if self.board.board[new_r][new_c].state.name == 'Occupied':
+            raise AttemptedToMoveIntoOccupiedTileError
         
+        # if move:
+        #     if self.board.board[new_r][new_c].height > self.board.board[old_r][old_c].height + 1:
+        #         raise AttemptedToMoveIntoBlockedTileError
+
+        # ADDED STATE -- old tile is no longer occupied; new tile is now occupied
         if move:
-            if self.board.board[new_r][new_c].height > self.board.board[old_r][old_c].height + 1:
-                raise AttemptedToMoveIntoBlockedTileError
+            self.board.board[old_r][old_c].toggle_state(is_occupied=False)
+
+            # change new tile's state to Occupied unless the tile is in its Winning State
+            if self.board.board[new_r][new_c].state.name != 'Winning':
+                self.board.board[new_r][new_c].toggle_state(is_occupied=True)
+        else:
+            # if not move, it means we're building
+            self.board.board[new_r][new_c].toggle_state(is_occupied=False)
 
         return [new_r, new_c]
 
@@ -164,8 +181,10 @@ class Santorini():
                     if w.row == t.row and w.col == t.column:
                         print(f"{w.name}", end='')
                         occupied = True
+                        # t.toggle_state(is_occupied=True) # ADDED STATE -- don't put here
                         break
                 if occupied == False:
+                    # t.toggle_state(is_occupied=False) # ADDED STATE -- don't put here
                     print(f" ", end='')
                 
             print(f"|\n{row_divider}")
