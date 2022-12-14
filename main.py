@@ -46,12 +46,14 @@ class SantoriniCLI:
         
     def run_game(self):
         
-        while not self.game.is_won():
+        while True:
             self.display_prompt()
+            if(self.game.is_won()):
+                break
             self.game.perform_action()
 
         # ADDED
-        return self.display_prompt() # want to display board and turn after game is won -- will check if 
+        return # want to display board and turn after game is won -- will check if 
 
 
     # TODO: change so this function returns true when the game is won
