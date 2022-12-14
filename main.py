@@ -50,11 +50,12 @@ class SantoriniCLI:
             self.display_prompt()
             self.game.perform_action()
 
-        return
+        # ADDED
+        return self.display_prompt() # want to display board and turn after game is won -- will check if 
 
 
     # TODO: change so this function returns true when the game is won
-    
+   
 
     def get_player(self):
         if self.game.turn % 2 == 0:
@@ -125,21 +126,6 @@ class SantoriniCLI:
             else:
                 print("")
 
-        # if self.enable_un_re == 'on':
-        #     action = input("undo, redo, next\n").lower()
-        #     while action not in ['undo', 'redo', 'next']:
-        #         action = input("undo, redo, next\n")
-
-            
-        #     if action == 'undo':
-        #         # do stuff
-        #         pass
-        #     elif action == 'redo':
-        #         # do stuff
-        #         pass
-        #     # if action == 'next': continue with the prompt
-
-
 
 
 
@@ -149,7 +135,6 @@ if __name__ == "__main__":
         white_player_strategy = sys.argv[1]
     except IndexError:
         white_player_strategy = "human"
-
 
     try:
         blue_player_strategy = sys.argv[2]

@@ -3,6 +3,70 @@ class HeightError(Exception):
     pass
 
 
+class TileState:
+    '''Base state for tiles'''
+    def __init__(self, tile):
+        self.tile = tile
+
+
+class PlayingState(TileState):
+    '''Tile is in PlayingState if the height < 3 and no worker occupies the tile'''
+    def __init__(self, tile):
+        super().__init__(tile)
+        self.name = 'Playing'
+
+    def toggle_state(self, is_occupied):
+        '''PlayingState can only toggle to Winning state or OccupiedState'''
+
+        if is_occupied:
+            self.tile.state = self.tile.occupied_state
+        elif self.tile.height == 3:
+            self.tile.state = self.tile.winning_state
+
+
+class OccupiedState(TileState):
+    '''Tile is in OccupiedState if a worker is currently on the tile'''
+    def __init__(self, tile):
+        super().__init__(tile)
+        self.name = 'Occupied'
+
+    def toggle_state(self, is_occupied):
+        '''OccupiedState can toggle to any state'''
+
+        if not is_occupied:
+            if self.tile.height == 3:
+                self.tile.state = self.tile.winning_state
+            if self.tile.height == 4:
+                self.tile.state = self.tile.blocked_state
+            elif self.tile.height < 3:
+                self.tile.state = self.tile.playing_state
+
+class WinningState(TileState):
+    '''Tile is in WinningState if the height is 3 -- player can win by moving worker onto tile'''
+    def __init__(self, tile):
+        # self.tile = tile
+        super().__init__(tile)
+        self.name = 'Winning'
+
+    def toggle_state(self, is_occupied):
+        '''WinningState can only toggle to BlockedState -- game would end if occupied'''
+
+        if self.tile.height == 4:
+            self.tile.state = self.tile.blocked_state
+
+
+class BlockedState(TileState):
+    '''Tile is in BlockedState if the height is 4 -- no workers can move onto the tile'''
+    def __init__(self, tile):
+        # self.tile = tile
+        super().__init__(tile)
+        self.name = 'Blocked'
+
+    def toggle_state(self, is_occupied):
+        '''Blocked tile has no possible future states'''
+        pass
+
+
 class Tile:
 
     MAX_HEIGHT = 4
@@ -11,20 +75,13 @@ class Tile:
         self.height = 0
         self.row = None # this is added upon creation
         self.column = None # added upon creation
-        self.worker = None
 
+        self.playing_state = PlayingState(self)
+        self.occupied_state = OccupiedState(self)
+        self.blocked_state = BlockedState(self)
+        self.winning_state = WinningState(self)
+        self.state = self.playing_state
 
-    # def __str__(self):
-    #     ## print out height + worker (if it exists) -- also change self.height to an int, but convert to str in this method/
-
-    
-
-    # attributes:
-        # level built
-        # worker occupying the space
-
-    # methods:
-        # function that adds or substracts height (build and unbuild)
 
     def build(self):
         '''Updates height if it's legal to build'''
@@ -40,11 +97,9 @@ class Tile:
             self.height -= 1
         else:
             raise HeightError("Building level cannot be negative")
+
+
+    def toggle_state(self, is_occupied=False):
+        '''Toggles to new state if necessary'''
+        self.state.toggle_state(is_occupied)
         
-
-
-
-
-# maybe use Factory pattern to create the tiles -- not sure
-# State pattern for whether the tile is occupied and/or has an L4 building
-    # state will be marked as free if there is no worker on it and no L4 building
