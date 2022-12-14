@@ -21,25 +21,29 @@ class SantoriniCLI:
             self.white_player = sys.argv[1]
         except IndexError:
             self.white_player = white_player
+    
 
         try:
             self.blue_player = sys.argv[2]
         except IndexError:
             self.blue_player = blue_player
-            
+
         try:
-            self.enable_un_re = sys.argv[3]
+            if sys.argv[3] == 'on':
+                self.enable_un_re = True
+            else:
+                self.enable_un_re = False
         except IndexError:
             self.enable_un_re = enable_un_re
 
         try:
-            self.enable_score_display = sys.argv[4] 
+            if sys.argv[4] == 'on':
+                self.enable_score_display = True
+            else:
+                self.enable_score_display = False
         except IndexError:
             self.enable_score_display = enable_score_display
 
-
-        #self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
-        #self.turn_number = 1
         # self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
 
         # if self.white_player == 'random':
@@ -71,10 +75,6 @@ class SantoriniCLI:
         else:
             self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
 
-
-        #self.turn_number = 1
-
-
         
         #self.run_game()
 
@@ -86,7 +86,6 @@ class SantoriniCLI:
         
         while not self.is_won():
             self.display_prompt()
-            #self.turn_number += 1
             self.game.turn += 1
 
         return
@@ -142,8 +141,6 @@ class SantoriniCLI:
 
     def display_prompt(self):
 
-        
-
         if self.enable_un_re == 'on':
             while True:
                 self.game.print_board()
@@ -158,7 +155,7 @@ class SantoriniCLI:
                 while action not in ['undo', 'redo', 'next']:
                     action = input("undo, redo, next\n")
 
-                
+
                 if action == 'undo':
                     # do stuff
                     self.game.undo()
@@ -180,20 +177,39 @@ class SantoriniCLI:
             else:
                 print("")
 
+        # if self.enable_un_re == 'on':
+        #     action = input("undo, redo, next\n").lower()
+        #     while action not in ['undo', 'redo', 'next']:
+        #         action = input("undo, redo, next\n")
+
+            
+        #     if action == 'undo':
+        #         # do stuff
+        #         pass
+        #     elif action == 'redo':
+        #         # do stuff
+        #         pass
+        #     # if action == 'next': continue with the prompt
+
         if self.game.players[self.game.turn % 2].type == "Heuristic":
             # print(self.game.get_sub_scores())
             directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
             possible_moves = self.game.get_sub_scores() # get sub-scores for all possible moves
             current_player = self.game.turn % 2
-            move = self.game.players[current_player].find_best_move(possible_moves)
+            try:
+                move = self.game.players[current_player].get_move(possible_moves)
+            except AllScoresNegativeError:
+                print(f"No possible moves available, {self.game.players[current_player].name} loses")
+                exit(0)
             worker_to_move = move[0]
-            new_row = move[1][0]
-            new_col = move[1][1]
+            move_dir = move[1]
+            #new_row = move[1][0]
+            #new_col = move[1][1]
 
             self.game.select_worker(worker_to_move.name)
-
-            move_dir = self.game.players[current_player].get_move(possible_moves)
-
+            print('Worker: ' + worker_to_move.name +'\n')
+            #move_dir = self.game.players[current_player].get_move(possible_moves)
+            print('Move_dir: ' + move_dir +'\n')
             # worker_to_move.move_to(new_row, new_col)
             self.game.move(move_dir)
             build_dir = random.choice(directions)
@@ -202,12 +218,39 @@ class SantoriniCLI:
                 try:
                     self.game.build(build_dir)
                     break
-                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError):
+                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
                     build_dir = random.choice(directions)
 
-            print(f"{worker_to_move.name},{move_dir},{build_dir}") # add other stuff as well
+            print(f"{worker_to_move.name},{move_dir},{build_dir}")
             return
-            # implement move, build randomly, and print out what was done
+        
+        elif self.game.players[self.game.turn % 2].type == "Random":
+            directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
+            player_workers = self.game.players[self.game.turn % 2].pieces
+            worker_to_move = random.choice(player_workers)
+
+            self.game.select_worker(worker_to_move.name)
+
+            move_dir = random.choice(directions)
+            while True:
+                try:
+                    self.game.move(move_dir)
+                    break
+                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
+                    move_dir = random.choice(directions)
+
+            build_dir = random.choice(directions)
+            while True:
+                try:
+                    self.game.build(build_dir)
+                    break
+                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
+                    build_dir = random.choice(directions)
+
+            print(f"{worker_to_move.name},{move_dir},{build_dir}")
+            return
+
+            
 
         the_worker = None
         while True:

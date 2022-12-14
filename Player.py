@@ -1,11 +1,13 @@
 
 import random
 
+class AllScoresNegativeError(Exception):
+    pass
 
 class Player:
-    def __init__(self, name, side=None, pieces=None):
+    def __init__(self, name, pieces=None):
         self.name = name
-        self.side = side
+        #self.side = side
         self.pieces = pieces
         self.type = "Human"
     def get_move(self):
@@ -41,48 +43,40 @@ class HeuristicPlayer(Player):
     #     return poss_moves
     
     def get_move(self, possible_moves):
-        # return self.find_best_move(possible_moves)
-
-        # directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
-        # possible_moves = self.game.get_sub_scores() # get sub-scores for all possible moves
-        # move = self.game.players[self.game.turn % 2].find_best_move(possible_moves)
-        # worker_to_move = move[0]
-        # new_row = move[1][0]
-        # new_col = move[1][1]
-
-        # self.game.select_worker(worker_to_move.name)
-        # worker_to_move.move_to(new_row, new_col)
-        # build_dir = random.choice(directions)
         
         # worker = best_move[0]
         best_move = self.find_best_move(possible_moves)
         worker = best_move[0]
         orig_row = worker.row
         orig_col = worker.col
+        
 
         new_row = best_move[1][0]
         new_col = best_move[1][1]
+
+        print(f"Row: {new_row}\n")
+        print(f"Col: {new_col}\n")
 
         # (1, 3) -> (2, 2): diff = -1, 1
         row_diff = orig_row - new_row
         col_diff = orig_col - new_col
 
-        if row_diff == 1 and col_diff == -1:
-            return 'sw'
-        elif row_diff == 1 and col_diff == 1:
-            return 'se'
-        elif row_diff == -1 and col_diff == -1:
-            return 'nw'
+        if row_diff == -1 and col_diff == -1:
+            return [worker, 'se']
         elif row_diff == -1 and col_diff == 1:
-            return 'ne'
+            return [worker, 'sw']
+        elif row_diff == 1 and col_diff == -1:
+            return [worker, 'ne']
+        elif row_diff == 1 and col_diff == 1:
+            return [worker, 'nw']
         elif row_diff == 0 and col_diff == -1:
-            return 'w'
+            return [worker, 'e']
         elif row_diff == 0 and col_diff == 1:
-            return 'e'
-        elif row_diff == 1 and col_diff == 0:
-            return 's'
+            return [worker,'w']
         elif row_diff == -1 and col_diff == 0:
-            return 'n'
+            return [worker,'s']
+        elif row_diff == 1 and col_diff == 0:
+            return [worker,'n']
         
 
     
@@ -109,8 +103,18 @@ class HeuristicPlayer(Player):
         for w2 in w2_sub_scores:
             w2_scores.append(sum(w2))
 
-        w1_max = max(w1_scores)
-        w2_max = max(w2_scores)
+        if len(w1_scores) > 0:
+            w1_max = max(w1_scores)
+        else:
+            w1_max = -1
+
+        if len(w2_scores) > 0:
+            w2_max = max(w2_scores)
+        else:
+            w2_max = -1
+
+        if w1_max == -1 and w2_max == -1:
+            raise AllScoresNegativeError
 
         max_score = max(w1_max, w2_max)
 
@@ -127,7 +131,8 @@ class HeuristicPlayer(Player):
                 max_move_two.append(w2)
 
         max_moves = [max_move_one, max_move_two]
-
+        print("Max Moves")
+        print(max_moves)
         if len(max_move_one) == 0:
             worker = self.pieces[1]
             moves = max_move_two

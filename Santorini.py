@@ -128,6 +128,8 @@ class Santorini():
             raise NotValidDirectionError
 
         if new_r > MAX_BOUND or new_c > MAX_BOUND or new_r < MIN_BOUND or new_c < MIN_BOUND:
+            print(f"Row: {new_r}\n")
+            print(f"Col: {new_c}\n")
             raise OutOfBoundsError
 
         if self.board.board[new_r][new_c].height >= MAX_HEIGHT: #change to match board implementation
@@ -141,7 +143,7 @@ class Santorini():
         if move:
             if self.board.board[new_r][new_c].height > self.board.board[old_r][old_c].height + 1:
                 raise AttemptedToMoveIntoBlockedTileError
-        
+
         return [new_r, new_c]
 
     def print_board(self):
@@ -174,12 +176,31 @@ class Santorini():
         poss_rows = [worker.row - 1, worker.row, worker.row + 1]
         poss_cols = [worker.col - 1, worker.col, worker.col + 1]
 
+        occupied_tiles = []
+        for w in self.players[0].pieces:
+            occupied_tiles.append((w.row, w.col))
 
-        poss_moves = list(itertools.product(poss_rows, poss_cols))
+        for b in self.players[1].pieces:
+            occupied_tiles.append((b.row, b.col))
 
-        for m in poss_moves:
-            if m[0] > 4 or m[1] > 4:
-                poss_moves.remove(m)
+
+        temp_poss_moves = list(itertools.product(poss_rows, poss_cols))
+        poss_moves = []
+        print(worker.name)
+        for m in temp_poss_moves:
+            # if m[0] > 4 or m[1] > 4:
+            #     poss_moves.remove(m)
+
+            # if m[0] < 0 or m[1] < 0:
+            #     poss_moves.remove(m)
+            if m[0] in range(5) and m[1] in range(5) and (m[0], m[1]) not in occupied_tiles and self.board.board[m[0]][m[1]].height <= self.board.board[worker.row][worker.col].height + 1:
+                print(m)
+                poss_moves.append(m)
+
+            # check if worker is on the tile
+            # if (m[0], m[1]) not in occupied_tiles:
+            #     poss_moves.append(m)
+            
 
         return poss_moves
 
@@ -198,7 +219,11 @@ class Santorini():
         else:
             opponent_player = self.players[0]
 
-        worker.move_to(row, col)
+        try:
+
+            worker.move_to(row, col)
+        except OutOfBoundsError:
+            print(row, col)
 
         sub_scores = [self.get_height_score(worker), self.get_center_score(worker), self.get_distance_score(current_player, opponent_player)]
         
@@ -268,6 +293,7 @@ class Santorini():
 
         worker1 = self.players[self.turn % 2].pieces[0]
         worker2 = self.players[self.turn % 2].pieces[1]
+
         # possible_moves = self.get_possible_moves()
         worker1_moves = self.get_possible_moves(worker1)
         worker2_moves = self.get_possible_moves(worker2)
@@ -283,7 +309,6 @@ class Santorini():
 
         return [w1_scores, w2_scores]
 
-
     def redo(self):
         try:
             move_command = self.commandfuture.pop()
@@ -297,7 +322,6 @@ class Santorini():
         except IndexError:
             pass
 
-
     def undo(self):
         try:
             build_command = self.commandhistory.pop()
@@ -310,10 +334,6 @@ class Santorini():
                 self.commandfuture.append(move_command)
         except IndexError: 
             pass
-    
+
     def next(self):
         self.commandfuture = []
-    
-
-        
-
