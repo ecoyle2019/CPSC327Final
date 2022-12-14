@@ -1,7 +1,7 @@
-from tile import Tile
+
 from Worker import Worker
 from board import Board
-from Player import Player, HeuristicPlayer, RandomPlayer
+from Player import Player
 from Command import MoveCommand, BuildCommand
 
 import itertools
@@ -71,12 +71,41 @@ class Santorini():
 
         self.turn = 0
 
-    
-    def select_worker(self, worker): 
+    def perform_action(self):
         self.current_player = self.players[self.turn %2]
+        while True:
+            try:
+                self.select_worker(self.current_player.select_worker())
+                break
+            except NotAValidWorkerError:
+                print("Not a valid worker")
 
+        while True:
+            try:
+                move_direction = self.current_player.select_move(self.currently_selected_worker)
+                self.move(move_direction)
+                break
+            except NotValidDirectionError:
+                print("Not a valid direction")
+            except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
+                print(f"Cannot move {move_direction}")
+
+        while True:
+            try:
+                build_direction = self.current_player.select_build(self.currently_selected_worker)
+                self.build(build_direction)
+                break
+            except NotValidDirectionError:
+                print("Not a valid direction")
+            except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
+                print(f"Cannot build {build_direction}")
+
+        self.current_player.print_action(self.currently_selected_worker.name, move_direction, build_direction)
+        self.turn+=1
+
+    def select_worker(self, worker): 
         for p in self.current_player.pieces:
-            if p.name == worker:
+            if p == worker:
                 self.currently_selected_worker = p
                 return
 
@@ -128,8 +157,8 @@ class Santorini():
             raise NotValidDirectionError
 
         if new_r > MAX_BOUND or new_c > MAX_BOUND or new_r < MIN_BOUND or new_c < MIN_BOUND:
-            print(f"Row: {new_r}\n")
-            print(f"Col: {new_c}\n")
+            #print(f"Row: {new_r}\n")
+            #print(f"Col: {new_c}\n")
             raise OutOfBoundsError
 
         if self.board.board[new_r][new_c].height >= MAX_HEIGHT: #change to match board implementation
@@ -186,23 +215,46 @@ class Santorini():
 
         temp_poss_moves = list(itertools.product(poss_rows, poss_cols))
         poss_moves = []
-        print(worker.name)
+        #print(worker.name)
         for m in temp_poss_moves:
             # if m[0] > 4 or m[1] > 4:
             #     poss_moves.remove(m)
 
             # if m[0] < 0 or m[1] < 0:
             #     poss_moves.remove(m)
-            if m[0] in range(5) and m[1] in range(5) and (m[0], m[1]) not in occupied_tiles and self.board.board[m[0]][m[1]].height <= self.board.board[worker.row][worker.col].height + 1:
-                print(m)
+            if m[0] in range(5) and m[1] in range(5) and (m[0], m[1]) not in occupied_tiles and self.board.board[m[0]][m[1]].height <= self.board.board[worker.row][worker.col].height + 1 and self.board.board[m[0]][m[1]].height != 4:
+                #print(m)
                 poss_moves.append(m)
 
-            # check if worker is on the tile
-            # if (m[0], m[1]) not in occupied_tiles:
-            #     poss_moves.append(m)
-            
-
         return poss_moves
+
+
+    def get_possible_builds(self, worker):
+        poss_rows = [worker.row - 1, worker.row, worker.row + 1]
+        poss_cols = [worker.col - 1, worker.col, worker.col + 1]
+
+        occupied_tiles = []
+        for w in self.players[0].pieces:
+            occupied_tiles.append((w.row, w.col))
+
+        for b in self.players[1].pieces:
+            occupied_tiles.append((b.row, b.col))
+
+
+        temp_poss_builds = list(itertools.product(poss_rows, poss_cols))
+        poss_builds = []
+        #print(worker.name)
+        for m in temp_poss_builds:
+            # if m[0] > 4 or m[1] > 4:
+            #     poss_moves.remove(m)
+
+            # if m[0] < 0 or m[1] < 0:
+            #     poss_moves.remove(m)
+            if m[0] in range(5) and m[1] in range(5) and (m[0], m[1]) not in occupied_tiles and self.board.board[m[0]][m[1]].height != 4:
+                #print(m)
+                poss_builds.append(m)
+        #print(poss_builds)
+        return poss_builds
 
 
     def get_possible_move_scores(self, worker, row, col):
@@ -337,3 +389,20 @@ class Santorini():
 
     def next(self):
         self.commandfuture = []
+    
+
+    def is_won(self):
+
+        # checking if white won
+        for w in self.players[0].pieces:
+            if self.board.board[w.row][w.col].height == 3:
+                print("white has won")
+                return True
+
+        # checking if blue won
+        for b in self.players[1].pieces:
+            if self.board.board[b.row][b.col].height == 3:
+                print("blue has won")
+                return True
+
+        return False

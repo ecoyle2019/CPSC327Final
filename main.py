@@ -1,7 +1,8 @@
 import sys
 import random
+from Strategy import *
 
-from Santorini import Santorini, NotAValidWorkerError,  NotValidDirectionError, AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError
+from Santorini import Santorini
 from board import Board
 from Player import *
 # command line defaults (in order, from argv[1] to argv[4]): white_player=human, blue_player=human, enable_un_re=off, enable_score_display=off
@@ -14,35 +15,10 @@ class SantoriniCLI:
     '''Command line interface for Santorini game'''
 
 
-    def __init__(self, white_player='human', blue_player='human', enable_un_re='off', enable_score_display='off'): # see how to reflect values found in command line args
+    def __init__(self, white_player_strategy='human', blue_player_strategy='human', enable_un_re=False, enable_score_display=True): # see how to reflect values found in command line args
 
         # each should be in a separate try-except block
-        try:
-            self.white_player = sys.argv[1]
-        except IndexError:
-            self.white_player = white_player
-    
-
-        try:
-            self.blue_player = sys.argv[2]
-        except IndexError:
-            self.blue_player = blue_player
-
-        try:
-            if sys.argv[3] == 'on':
-                self.enable_un_re = True
-            else:
-                self.enable_un_re = False
-        except IndexError:
-            self.enable_un_re = enable_un_re
-
-        try:
-            if sys.argv[4] == 'on':
-                self.enable_score_display = True
-            else:
-                self.enable_score_display = False
-        except IndexError:
-            self.enable_score_display = enable_score_display
+        
 
         # self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
 
@@ -56,24 +32,10 @@ class SantoriniCLI:
         # elif self.blue_player == 'heuristic':
         #     self.game.player_two = HeuristicPlayer("blue")
 
-        if self.white_player == 'heuristic' and self.blue_player == 'human':
-            self.game = Santorini(HeuristicPlayer("white"), Player(self.blue_player, "blue"))
-        elif self.white_player == 'heuristic' and self.blue_player == 'random':
-            self.game = Santorini(HeuristicPlayer("white"), RandomPlayer("blue"))
-        elif self.white_player == 'heuristic' and self.blue_player == 'heuristic':
-            self.game = Santorini(HeuristicPlayer("white"), HeuristicPlayer("blue"))
-        elif self.white_player == 'random' and self.blue_player == 'random':
-            self.game = Santorini(Player(self.white_player, "white"), RandomPlayer("blue"))
-        elif self.white_player == 'random' and self.blue_player == 'human':
-            self.game = Santorini(RandomPlayer("white"), Player(self.blue_player, "blue"))
-        elif self.white_player == 'random' and self.blue_player == 'heuristic':
-            self.game = Santorini(RandomPlayer("white"), HeuristicPlayer("blue"))
-        elif self.white_player == 'human' and self.blue_player == 'random':
-            self.game = Santorini(Player(self.white_player, "white"), RandomPlayer("blue"))
-        elif self.white_player == 'human' and self.blue_player == 'heuristic':
-            self.game = Santorini(Player(self.white_player, "white"), HeuristicPlayer("blue"))
-        else:
-            self.game = Santorini(Player(self.white_player, "white"), Player(self.blue_player, "blue"))
+        self.enable_un_re = enable_un_re
+        self.enable_score_display = enable_score_display
+        self.game = Santorini(Player("white", white_player_strategy), Player("blue", blue_player_strategy))
+        Strategy.game = self.game
 
         
         #self.run_game()
@@ -84,29 +46,15 @@ class SantoriniCLI:
         
     def run_game(self):
         
-        while not self.is_won():
+        while not self.game.is_won():
             self.display_prompt()
-            self.game.turn += 1
+            self.game.perform_action()
 
         return
 
 
     # TODO: change so this function returns true when the game is won
-    def is_won(self):
-
-        # checking if white won
-        for w in self.game.players[0].pieces:
-            if self.game.board.board[w.row][w.col].height == 3:
-                print("white has won")
-                return True
-
-        # checking if blue won
-        for b in self.game.players[1].pieces:
-            if self.game.board.board[b.row][b.col].height == 3:
-                print("blue has won")
-                return True
-
-        return False
+    
 
     def get_player(self):
         if self.game.turn % 2 == 0:
@@ -141,13 +89,13 @@ class SantoriniCLI:
 
     def display_prompt(self):
 
-        if self.enable_un_re == 'on':
+        if self.enable_un_re == True:
             while True:
                 self.game.print_board()
 
                 print(f"Turn: {self.game.turn + 1}, {self.get_player()}", end='')
 
-                if self.enable_score_display == 'on':
+                if self.enable_score_display == True:
                     print(f", {self.get_score_display()}")
                 else:
                     print("")
@@ -172,7 +120,7 @@ class SantoriniCLI:
 
             print(f"Turn: {self.game.turn + 1}, {self.get_player()}", end='')
 
-            if self.enable_score_display == 'on':
+            if self.enable_score_display == True:
                 print(f", {self.get_score_display()}")
             else:
                 print("")
@@ -191,108 +139,40 @@ class SantoriniCLI:
         #         pass
         #     # if action == 'next': continue with the prompt
 
-        if self.game.players[self.game.turn % 2].type == "Heuristic":
-            # print(self.game.get_sub_scores())
-            directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
-            possible_moves = self.game.get_sub_scores() # get sub-scores for all possible moves
-            current_player = self.game.turn % 2
-            try:
-                move = self.game.players[current_player].get_move(possible_moves)
-            except AllScoresNegativeError:
-                print(f"No possible moves available, {self.game.players[current_player].name} loses")
-                exit(0)
-            worker_to_move = move[0]
-            move_dir = move[1]
-            #new_row = move[1][0]
-            #new_col = move[1][1]
 
-            self.game.select_worker(worker_to_move.name)
-            print('Worker: ' + worker_to_move.name +'\n')
-            #move_dir = self.game.players[current_player].get_move(possible_moves)
-            print('Move_dir: ' + move_dir +'\n')
-            # worker_to_move.move_to(new_row, new_col)
-            self.game.move(move_dir)
-            build_dir = random.choice(directions)
-
-            while True:
-                try:
-                    self.game.build(build_dir)
-                    break
-                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
-                    build_dir = random.choice(directions)
-
-            print(f"{worker_to_move.name},{move_dir},{build_dir}")
-            return
-        
-        elif self.game.players[self.game.turn % 2].type == "Random":
-            directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
-            player_workers = self.game.players[self.game.turn % 2].pieces
-            worker_to_move = random.choice(player_workers)
-
-            self.game.select_worker(worker_to_move.name)
-
-            move_dir = random.choice(directions)
-            while True:
-                try:
-                    self.game.move(move_dir)
-                    break
-                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
-                    move_dir = random.choice(directions)
-
-            build_dir = random.choice(directions)
-            while True:
-                try:
-                    self.game.build(build_dir)
-                    break
-                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
-                    build_dir = random.choice(directions)
-
-            print(f"{worker_to_move.name},{move_dir},{build_dir}")
-            return
-
-            
-
-        the_worker = None
-        while True:
-            try:
-                the_worker = input("Select a worker to move\n")
-                # do stuff w the_worker
-                self.game.select_worker(the_worker)
-                break
-            except NotAValidWorkerError:
-                print("Not a valid worker")
-
-        move_direction = None
-        while True:
-            try:
-                move_direction = input("Select a direction to move\n")
-                self.game.move(move_direction)
-                break
-                # do stuff with move_direction
-            except NotValidDirectionError:
-                print("Not a valid direction")
-            except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
-                print(f"Cannot move {move_direction}")
-
-
-        build_direction = None
-        while True:
-            try:
-                build_direction = input("Select a direction to build\n")
-                self.game.build(build_direction)
-                break
-                # do stuff with build_direction
-            except NotValidDirectionError:
-                print("Not a valid direction")
-            except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
-                print(f"Cannot build {build_direction}")
 
 
 
 if __name__ == "__main__":
     # setup sql database (if we use) + anything else
+    try:
+        white_player_strategy = sys.argv[1]
+    except IndexError:
+        white_player_strategy = "human"
 
-    game = SantoriniCLI()
+
+    try:
+        blue_player_strategy = sys.argv[2]
+    except IndexError:
+        blue_player_strategy = "human"
+
+    try:
+        if sys.argv[3] == 'on':
+            enable_un_re = True
+        else:
+            enable_un_re = False
+    except IndexError:
+        enable_un_re = False
+
+    try:
+        if sys.argv[4] == 'on':
+            enable_score_display = True
+        else:
+            enable_score_display = False
+    except IndexError:
+        enable_score_display = False
+
+    game = SantoriniCLI(white_player_strategy, blue_player_strategy, enable_un_re, enable_score_display)
     game.run_game()
     # game.print_board()
 
