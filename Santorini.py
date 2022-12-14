@@ -419,10 +419,27 @@ class Santorini():
                 print("white has won")
                 return True
 
+        sum_moves = 0
+        for w in self.players[0].pieces:
+            sum_moves += len(self.get_possible_moves(w))
+
+        print(sum_moves)        
+        if sum_moves == 0:
+            print("white has no moves, blue has won")
+            return True
         # checking if blue won
         for b in self.players[1].pieces:
             if self.board.board[b.row][b.col].height == 3:
                 print("blue has won")
                 return True
+        
+        sum_moves = 0
+        for b in self.players[1].pieces:
+            sum_moves += len(self.get_possible_moves(b))
+        
+        print(sum_moves)  
+        if sum_moves == 0:
+            print("blue has no moves, white has won")
+            return True
 
         return False
