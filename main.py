@@ -88,7 +88,8 @@ class SantoriniCLI:
             self.display_prompt()
             self.game.turn += 1
 
-        return
+        # ADDED
+        return self.display_prompt() # want to display board and turn after game is won -- will check if 
 
 
     # TODO: change so this function returns true when the game is won
@@ -97,14 +98,16 @@ class SantoriniCLI:
         # checking if white won
         for w in self.game.players[0].pieces:
             if self.game.board.board[w.row][w.col].height == 3:
-                print("white has won")
-                return True
+                # print("white has won")
+                # return True
+                return "white has won"
 
         # checking if blue won
         for b in self.game.players[1].pieces:
             if self.game.board.board[b.row][b.col].height == 3:
-                print("blue has won")
-                return True
+                # print("blue has won")
+                # return True
+                return "blue has won"
 
         return False
 
@@ -141,13 +144,13 @@ class SantoriniCLI:
 
     def display_prompt(self):
 
-        if self.enable_un_re == 'on':
+        if self.enable_un_re == True:
             while True:
                 self.game.print_board()
 
                 print(f"Turn: {self.game.turn + 1}, {self.get_player()}", end='')
 
-                if self.enable_score_display == 'on':
+                if self.enable_score_display == True:
                     print(f", {self.get_score_display()}")
                 else:
                     print("")
@@ -172,24 +175,15 @@ class SantoriniCLI:
 
             print(f"Turn: {self.game.turn + 1}, {self.get_player()}", end='')
 
-            if self.enable_score_display == 'on':
+            if self.enable_score_display == True:
                 print(f", {self.get_score_display()}")
             else:
                 print("")
 
-        # if self.enable_un_re == 'on':
-        #     action = input("undo, redo, next\n").lower()
-        #     while action not in ['undo', 'redo', 'next']:
-        #         action = input("undo, redo, next\n")
-
-            
-        #     if action == 'undo':
-        #         # do stuff
-        #         pass
-        #     elif action == 'redo':
-        #         # do stuff
-        #         pass
-        #     # if action == 'next': continue with the prompt
+        # ADDED
+        if self.is_won() != False:
+            print(self.is_won())
+            return
 
         if self.game.players[self.game.turn % 2].type == "Heuristic":
             # print(self.game.get_sub_scores())
@@ -273,6 +267,12 @@ class SantoriniCLI:
                 print("Not a valid direction")
             except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
                 print(f"Cannot move {move_direction}")
+            # except AttemptedToMoveIntoBlockedTileError:
+            #     print("cannot move: BLOCKED")
+            # except AttemptedToMoveIntoOccupiedTileError:
+            #     print("cannot move: OCCUPIED")
+            # except OutOfBoundsError:
+            #     print("cannot move: OUT OF BOUNDS")
 
 
         build_direction = None
