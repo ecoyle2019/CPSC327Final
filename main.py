@@ -19,10 +19,10 @@ class SantoriniCLI:
         # each should be in a separate try-except block
         try:
             self.white_player = sys.argv[1]
-  
         except IndexError:
             self.white_player = white_player
     
+
         try:
             self.blue_player = sys.argv[2]
         except IndexError:
@@ -196,15 +196,20 @@ class SantoriniCLI:
             directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']
             possible_moves = self.game.get_sub_scores() # get sub-scores for all possible moves
             current_player = self.game.turn % 2
-            move = self.game.players[current_player].find_best_move(possible_moves)
+            try:
+                move = self.game.players[current_player].get_move(possible_moves)
+            except AllScoresNegativeError:
+                print(f"No possible moves available, {self.game.players[current_player].name} loses")
+                exit(0)
             worker_to_move = move[0]
-            new_row = move[1][0]
-            new_col = move[1][1]
+            move_dir = move[1]
+            #new_row = move[1][0]
+            #new_col = move[1][1]
 
             self.game.select_worker(worker_to_move.name)
-
-            move_dir = self.game.players[current_player].get_move(possible_moves)
-
+            print('Worker: ' + worker_to_move.name +'\n')
+            #move_dir = self.game.players[current_player].get_move(possible_moves)
+            print('Move_dir: ' + move_dir +'\n')
             # worker_to_move.move_to(new_row, new_col)
             self.game.move(move_dir)
             build_dir = random.choice(directions)
@@ -213,7 +218,7 @@ class SantoriniCLI:
                 try:
                     self.game.build(build_dir)
                     break
-                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError):
+                except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
                     build_dir = random.choice(directions)
 
             print(f"{worker_to_move.name},{move_dir},{build_dir}")
