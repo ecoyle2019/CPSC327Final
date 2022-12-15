@@ -24,6 +24,10 @@ class NotAValidWorkerError(Exception):
     """Given Worker was not a valid worker"""
     pass 
 
+class NotYourWorkerError(Exception):
+    """Given Worker that did not belong to player"""
+    pass 
+
 class NotValidDirectionError(Exception):
     """Given direction was not a valid direction"""
     pass
@@ -76,8 +80,13 @@ class Santorini():
             try:
                 self.select_worker(self.current_player.select_worker())
                 break
+            except NotYourWorkerError:
+                print("That is not your worker")
+                pass
             except NotAValidWorkerError:
                 print("Not a valid worker")
+                pass
+                
 
         while True:
             try:
@@ -86,8 +95,12 @@ class Santorini():
                 break
             except NotValidDirectionError:
                 print("Not a valid direction")
+                pass
+                
             except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
                 print(f"Cannot move {move_direction}")
+                pass
+                
 
         while True:
             try:
@@ -96,18 +109,23 @@ class Santorini():
                 break
             except NotValidDirectionError:
                 print("Not a valid direction")
+                pass
             except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
                 print(f"Cannot build {build_direction}")
+                pass
 
         self.current_player.print_action(self.currently_selected_worker.name, move_direction, build_direction)
         self.turn+=1
 
     def select_worker(self, worker): 
         for p in self.current_player.pieces:
-            if p == worker:
+            if p.name == worker:
                 self.currently_selected_worker = p
                 return
-
+        other_player = self.players[(self.turn + 1) %2]
+        for p in other_player.pieces:
+            if p.name == worker:
+                raise NotYourWorkerError
         raise NotAValidWorkerError        
 
     def move(self, direction):
@@ -159,6 +177,9 @@ class Santorini():
             #print(f"Row: {new_r}\n")
             #print(f"Col: {new_c}\n")
             raise OutOfBoundsError
+        
+        if self.board.board[new_r][new_c].height > self.board.board[old_r][old_c].height + 1:
+            raise AttemptedToMoveIntoBlockedTileError
 
         # if self.board.board[new_r][new_c].height >= MAX_HEIGHT: #change to match board implementation
         #     raise AttemptedToMoveIntoBlockedTileError
@@ -293,7 +314,8 @@ class Santorini():
 
             worker.move_to(row, col)
         except OutOfBoundsError:
-            print(row, col)
+            pass
+            #print(row, col)
 
         sub_scores = [self.get_height_score(worker), self.get_center_score(worker), self.get_distance_score(current_player, opponent_player)]
         
@@ -421,9 +443,9 @@ class Santorini():
         for w in self.players[0].pieces:
             sum_moves += len(self.get_possible_moves(w))
 
-        print(sum_moves)        
+                
         if sum_moves == 0:
-            print("white has no moves, blue has won")
+            print("blue has won")
             return True
         # checking if blue won
         for b in self.players[1].pieces:
@@ -435,9 +457,9 @@ class Santorini():
         for b in self.players[1].pieces:
             sum_moves += len(self.get_possible_moves(b))
         
-        print(sum_moves)  
+        
         if sum_moves == 0:
-            print("blue has no moves, white has won")
+            print("white has won")
             return True
 
         return False

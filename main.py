@@ -102,9 +102,9 @@ class SantoriniCLI:
                     print(f", {self.get_score_display()}")
                 else:
                     print("")
-                action = input("undo, redo, next\n").lower()
+                action = input("undo, redo, or next\n").lower()
                 while action not in ['undo', 'redo', 'next']:
-                    action = input("undo, redo, next\n")
+                    action = input("undo, redo, or next\n")
 
 
                 if action == 'undo':
