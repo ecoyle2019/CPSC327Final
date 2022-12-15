@@ -110,7 +110,7 @@ class Santorini():
             except NotValidDirectionError:
                 print("Not a valid direction")
                 pass
-            except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError):
+            except (AttemptedToMoveIntoBlockedTileError, AttemptedToMoveIntoOccupiedTileError, OutOfBoundsError, HeightError):
                 print(f"Cannot build {build_direction}")
                 pass
 
@@ -138,7 +138,7 @@ class Santorini():
 
     def build(self, direction):
 
-        new_row_col = self.check_valid_move(direction)
+        new_row_col = self.check_valid_move(direction, move=False)
         build = BuildCommand(self.board.board[new_row_col[0]][new_row_col[1]])
         
         build.execute()
@@ -178,7 +178,7 @@ class Santorini():
             #print(f"Col: {new_c}\n")
             raise OutOfBoundsError
         
-        if self.board.board[new_r][new_c].height > self.board.board[old_r][old_c].height + 1:
+        if move == True and self.board.board[new_r][new_c].height > self.board.board[old_r][old_c].height + 1:
             raise AttemptedToMoveIntoBlockedTileError
 
         # if self.board.board[new_r][new_c].height >= MAX_HEIGHT: #change to match board implementation
@@ -411,6 +411,7 @@ class Santorini():
                 self.turn+=1
                 self.commandhistory.append(move_command)
                 self.commandhistory.append(build_command)
+                self.toggle_all_states()
         except IndexError:
             pass
 
@@ -424,6 +425,7 @@ class Santorini():
                 self.turn-=1
                 self.commandfuture.append(build_command)
                 self.commandfuture.append(move_command)
+                self.toggle_all_states()
         except IndexError: 
             pass
 
@@ -463,3 +465,16 @@ class Santorini():
             return True
 
         return False
+
+
+    def toggle_all_states(self):
+        allworkers = self.players[0].pieces + self.players[1].pieces 
+        for i in range(5):
+            for j in range(5):
+                for w in allworkers:
+                    is_occupied = False
+                    if w.row == i and w.col == j:
+                        is_occupied = True
+                        break
+                    self.board.board[i][j].toggle_state(is_occupied)
+

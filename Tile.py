@@ -53,6 +53,11 @@ class WinningState(TileState):
 
         if self.tile.height == 4:
             self.tile.state = self.tile.blocked_state
+        elif self.tile.height < 3:
+            if(is_occupied):
+                self.tile.state = self.tile.occupied_state
+            else:
+                self.tile.state = self.tile.playing_state
 
 
 class BlockedState(TileState):
@@ -64,6 +69,12 @@ class BlockedState(TileState):
 
     def toggle_state(self, is_occupied):
         '''Blocked tile has no possible future states'''
+        if self.tile.height == 3:
+            self.tile.state = self.tile.winning_state
+        if self.tile.height < 3 and not is_occupied:
+            self.tile.state = self.tile.playing_state
+        elif self.tile.height < 3 and is_occupied: 
+            self.tile.state = self.tile.occupied__state
         pass
 
 
