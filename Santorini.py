@@ -326,8 +326,8 @@ class Santorini():
 
     def get_height_score(self, worker):
         
-        row_idx = worker.row - 1
-        col_idx = worker.col - 1
+        row_idx = worker.row
+        col_idx = worker.col
         return self.board.board[row_idx][col_idx].height
 
     def get_center_score(self, worker):
