@@ -41,9 +41,7 @@ class OutOfBoundsError(Exception):
     pass
 
 class Santorini():
-    def __init__(self, player_one, player_two, enable_undo=False, enable_score_display=False):
-        self.enable_undo = enable_undo
-        self.enable_score_display = enable_score_display
+    def __init__(self, player_one, player_two):
 
         self.board = Board()
 
