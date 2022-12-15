@@ -33,7 +33,6 @@ class MoveCommand(Command):
 class BuildCommand(Command): 
     def __init__(self, tile):
         self.tile = tile
-        self.prev_height = None
     def execute(self):
         self.tile.build()
     def unexecute(self):

@@ -1,15 +1,6 @@
 #Worker class
 
 
-NORTH = 'n'
-SOUTH = 's'
-EAST = 'e'
-WEST = 'w'
-NORTHEAST = 'ne'
-NORTHWEST = 'nw'
-SOUTHEAST = 'se'
-SOUTHWEST = 'sw'
-
 MIN_BOUND = 0
 MAX_BOUND = 4
 
@@ -17,8 +8,6 @@ class OutOfBoundsError(Exception):
     """Worker tried to move out of boundary of board"""
     pass
 
-class NotValidDirectionError(Exception):
-    """Given direct was not a valid direction"""
 
 class Worker():
     """Worker Class with name and position given in row/col format"""
