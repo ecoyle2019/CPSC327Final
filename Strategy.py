@@ -46,15 +46,11 @@ class Strategy:
         return move_direction
 class InputStrategy(Strategy):
     def select_worker(self, pieces):
-        worker = input("Select a worker to move\n")
-        for p in pieces:
-            if p.name == worker and len(Strategy.game.get_possible_moves(p)) != 0:
-                return p
-        return -1
+        return input("Select a worker to move\n")
     def select_move(self, worker):
-        return input("Select a direction to move\n")
+        return input("Select a direction to move (n, ne, e, se, s, sw, w, nw)\n")
     def select_build(self, worker):
-        return input("Select a direction to build\n")
+        return input("Select a direction to build (n, ne, e, se, s, sw, w, nw)\n")
     def print_action(self, worker, move_dir, build_dir):
         print(f"", end = "")
 
@@ -68,7 +64,7 @@ class RandomStrategy(Strategy):
             if len(Strategy.game.get_possible_moves(worker)) == 0:
                 raise NoPossibleMoves
 
-        return worker
+        return worker.name
 
     def select_move(self, worker):
         moves = Strategy.game.get_possible_moves(worker)
@@ -127,7 +123,7 @@ class HeuristicStrategy(Strategy):
         # (1, 3) -> (2, 2): diff = -1, 1
 
         
-        return worker
+        return worker.name
         
     def select_build(self, worker):
         builds = Strategy.game.get_possible_builds(worker)
